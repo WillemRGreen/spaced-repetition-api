@@ -58,14 +58,14 @@ const UserService = {
         .first()
 
       const languageWords = [
-        ['entraine toi', 'practice', 2],
-        ['bonjour', 'hello', 3],
-        ['maison', 'house', 4],
-        ['développeur', 'developer', 5],
-        ['traduire', 'translate', 6],
-        ['incroyable', 'amazing', 7],
-        ['chien', 'dog', 8],
-        ['chat', 'cat', null],
+        ['au revoir', 'goodbye', 2],
+        ['oui', 'yes', 3],
+        ['non', 'no', 4],
+        ['merci', 'thank you', 5],
+        ['garçon', 'boy', 6],
+        ['fille', 'girl', 7],
+        ['Français', 'French', 8],
+        ['Bonsoir', 'goodnight', null],
       ]
 
       const [languageHeadId] = await trx
