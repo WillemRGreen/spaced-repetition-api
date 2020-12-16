@@ -45,8 +45,36 @@ languageRouter
 
 languageRouter
   .get('/head', async (req, res, next) => {
-    // implement me
-    res.send('implement me!')
+    try {
+      const usersLanguage = await LanguageService.getUsersLanguage(
+        req.app.get('db'),
+        req.user.id,
+      )
+
+      const headWord = await LanguageService.getSpecificWord(
+        req.app.get('db'),
+        usersLanguage.head
+      )
+
+      console.log(headWord)
+
+      const fullRes = {
+        nextWord: headWord[0].original,
+        totalScore: usersLanguage.total_score,
+        wordCorrectCount: headWord[0].correct_count,
+        wordIncorrectCount: headWord[0].incorrect_count
+      }
+      //implement serialization of this array^ so that this isnt terrible
+
+      res.json({
+        nextWord: headWord[0].original,
+        totalScore: usersLanguage.total_score,
+        wordCorrectCount: headWord[0].correct_count,
+        wordIncorrectCount: headWord[0].incorrect_count})
+      next()
+    } catch (error) {
+      next(error)
+    }
   })
 
 languageRouter

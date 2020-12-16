@@ -13,6 +13,22 @@ const LanguageService = {
       .first()
   },
 
+  getSpecificWord(db, word_id) {
+    return db
+      .from('word')
+      .select(
+        'id',
+        'language_id',
+        'original',
+        'translation',
+        'next',
+        'memory_value',
+        'correct_count',
+        'incorrect_count',
+      )
+      .where('word.id', word_id )
+  },
+
   getLanguageWords(db, language_id) {
     return db
       .from('word')
