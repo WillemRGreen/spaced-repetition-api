@@ -44,6 +44,19 @@ const LanguageService = {
       )
       .where({ language_id })
   },
+
+  serializeWords(word) {
+    return {
+      id: word.id,
+      language_id: word.language_id,
+      original: word.original,
+      translation: word.translation,
+      next: word.next,
+      memory_value: word.memory_value,
+      correct_count: word.correct_count,
+      incorrect_count: word.incorrect_count
+    }
+  }
 }
 
 module.exports = LanguageService

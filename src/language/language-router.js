@@ -56,14 +56,12 @@ languageRouter
         usersLanguage.head
       )
 
-      console.log(headWord)
-
-      const fullRes = {
-        nextWord: headWord[0].original,
-        totalScore: usersLanguage.total_score,
-        wordCorrectCount: headWord[0].correct_count,
-        wordIncorrectCount: headWord[0].incorrect_count
-      }
+      // const fullRes = {
+      //   nextWord: headWord[0].original,
+      //   totalScore: usersLanguage.total_score,
+      //   wordCorrectCount: headWord[0].correct_count,
+      //   wordIncorrectCount: headWord[0].incorrect_count
+      // }
       //implement serialization of this array^ so that this isnt terrible
 
       res.json({
