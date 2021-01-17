@@ -77,8 +77,18 @@ languageRouter
 
 languageRouter
   .post('/guess', async (req, res, next) => {
-    // implement me
-    res.send('implement me!')
+    const { guess } = req.body;
+    const newGuess = { guess }
+
+    for (const [key, value] of Object.entries(newBook)) {
+      if (value == null) {
+        return res.status(400).json({
+          error: { message: `Missing '${key}' in request body` }
+        })
+      }
+    }
+
+    LanguageService.insertGuess()
   })
 
 module.exports = languageRouter
