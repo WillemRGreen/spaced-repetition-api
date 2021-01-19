@@ -6,7 +6,7 @@ const linkedWordsRouter = express.Router()
 
 linkedWordsRouter
     .use(requireAuth)
-    .get('/', async (req, res, next) => {
+    .get('/linkedlist', async (req, res, next) => {
         try {
           const words = await LinkedWordsService.getLanguageWords(
             req.app.get('db'),

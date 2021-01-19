@@ -1,73 +1,101 @@
-class Node {
-    constructor(data){
-        this.data = data
-        this.next = null
+class _Node {
+    constructor(value, next) {
+        this.value = value;
+        this.next = next;
     }
 }
 
 class LinkedList {
-    constructor(head = null){
-        this.head = head
+    constructor() {
+        this.head = null;
     }
-
-    addNewNode(data){
-        const node = new Node(data);
-
+    insertFirst(n) {
+        this.head = new _Node(n, this.head);
+    }
+    insertLast(n) {
         if (this.head === null) {
-        this.head = node;
+            this.insertFirst(n);
         } else {
-            node.next = this.head;
-
-            this.head = node;
-
-            return this.head;
-        }
-    }
-
-    moveNode(memory){
-        //move node (memory) places back in the list. Note, this only moves head node, may have to implement others
-        let currentNode = this.head;
-        if(memory < list.lengthOfList()){
-            for(let i = 0; i < memory; i++){
-                let temp = currentNode.next.data;
-                currentNode.next.data = currentNode.data;
-                currentNode.data = temp;
-                currentNode = currentNode.next;
+            let temp = this.head;
+            while (temp.next !== null) {
+                temp = temp.next;
             }
-            return this.head
-        } else {
-            for(let i = 0; i < list.lengthOfList() - 1; i++){
-                let temp = currentNode.next.data;
-                currentNode.next.data = currentNode.data;
-                currentNode.data = temp;
-                currentNode = currentNode.next;
+            temp.next = new _Node(n, null);
+        }
+    }
+    find(n) {
+        let currNode = this.head;
+        if (!this.head) {
+            return null;
+        }
+        while (currNode.value !== n) {
+            if (currNode.next === null) {
+                return null;
+            } else {
+                currNode = currNode.next;
             }
-            return this.head
         }
-        
+        return currNode;
     }
-
-    returnAllData(){
-        // Return all items in the queue.
-        let newArray = [];
-        let currentNode = this.head;
-
-        while (currentNode) {
-        newArray.push(currentNode.data);
-        currentNode = currentNode.next;
+    remove(n) {
+        if (!this.head) {
+            return null;
         }
-        return newArray;
+        if (this.head.value === n) {
+            this.head = this.head.next;
+            return;
+        }
+        let currNode = this.head;
+        let prevNode;
+        if (currNode === null) {
+            console.log("not found!");
+            return;
+        }
+        prevNode.next = currnode.next;
     }
-
-    lengthOfList(){
-        let currentNode = this.head;
-        let count = 0;
-        while(currentNode){
+    insertAfter(newValue, afterTarget) {
+        if (!this.head) {
+            this.insertFirst(newValue);
+        }
+        let currNode = this.head;
+        while (currNode.next !== null && currNode.value !== afterTarget) {
+            currNode = currNode.next;
+        }
+        if (currNode.next === null) {
+            console.log("Target not found");
+            return;
+        }
+        let newNode = new _Node(newValue, currNode.next);
+        currNode.next = newNode;
+    }
+    insertAt(newValue, position) {
+        let count = 1;
+        let currNode = this.head;
+        while (count < position) {
+            if (currNode.next === null) {
+                console.log("Could not find that position");
+                return;
+            }
             count++;
-            currentNode = currentNode.next;
+            currNode = currNode.next;
         }
-        return count;
+        currNode.next = new _Node(newValue, currNode.next);
     }
 }
 
-module.exports = LinkedList;
+function returnAllData(linkedList) {
+    let currentNode = linkedList.head;
+    let result = [];
+    while (currentNode.next !== null) {
+        result.push(currentNode.value);
+        currentNode = currentNode.next;
+    }
+    result.push(currentNode.value);
+    return result;
+}
+
+module.exports = {
+    LinkedList,
+    returnAllData,
+    _Node
+};

@@ -1,8 +1,10 @@
 const express = require('express')
 const LanguageService = require('./language-service')
+const { returnAllData, _Node } = require("../linkedlist/linkedlist")
 const { requireAuth } = require('../middleware/jwt-auth')
 
 const languageRouter = express.Router()
+const bodyParser = express.json();
 
 languageRouter
   .use(requireAuth)
@@ -32,7 +34,6 @@ languageRouter
         req.app.get('db'),
         req.language.id,
       )
-
       res.json({
         language: req.language,
         words,
@@ -43,52 +44,126 @@ languageRouter
     }
   })
 
-languageRouter
-  .get('/head', async (req, res, next) => {
-    try {
-      const usersLanguage = await LanguageService.getUsersLanguage(
-        req.app.get('db'),
-        req.user.id,
-      )
+languageRouter.get("/head", async (req, res, next) => {
+  try {
+    const [nextWord] = await LanguageService.getNextWord(
+      req.app.get("db"),
+      req.language.id
+    );
+    res.json({
+      nextWord: nextWord.original,
+      totalScore: req.language.total_score,
+      wordCorrectCount: nextWord.correct_count,
+      wordIncorrectCount: nextWord.incorrect_count,
+    });
+    next();
+  } catch (e) {
+    next(e);
+  }
+});
 
-      const headWord = await LanguageService.getSpecificWord(
-        req.app.get('db'),
-        usersLanguage.head
-      )
+languageRouter.post("/guess", bodyParser, async (req, res, next) => {
+  const guess = req.body.guess;
+  if (!guess) {
+    res.status(400).json({
+      error: `Missing 'guess' in request body`,
+    });
+  }
+  try {
+    let words = await LanguageService.getLanguageWords(
+      req.app.get("db"),
+      req.language.id
+    );
 
-      // const fullRes = {
-      //   nextWord: headWord[0].original,
-      //   totalScore: usersLanguage.total_score,
-      //   wordCorrectCount: headWord[0].correct_count,
-      //   wordIncorrectCount: headWord[0].incorrect_count
-      // }
-      //implement serialization of this array^ so that this isnt terrible
+    const [{ head }] = await LanguageService.getLanguageHead(
+      req.app.get("db"),
+      req.language.id
+    );
 
-      res.json({
-        nextWord: headWord[0].original,
-        totalScore: usersLanguage.total_score,
-        wordCorrectCount: headWord[0].correct_count,
-        wordIncorrectCount: headWord[0].incorrect_count})
-      next()
-    } catch (error) {
-      next(error)
-    }
-  })
+    let list = LanguageService.createLinkedList(words, head);
+    let [checkNextWord] = await LanguageService.checkGuess(
+      req.app.get("db"),
+      req.language.id
+    );
+    if (checkNextWord.translation === guess) {
+      let newMemVal = list.head.value.memory_value * 2;
+      list.head.value.memory_value = newMemVal;
+      list.head.value.correct_count++;
 
-languageRouter
-  .post('/guess', async (req, res, next) => {
-    const { guess } = req.body;
-    const newGuess = { guess }
-
-    for (const [key, value] of Object.entries(newBook)) {
-      if (value == null) {
-        return res.status(400).json({
-          error: { message: `Missing '${key}' in request body` }
-        })
+      let curr = list.head;
+      let countDown = newMemVal;
+      while (countDown > 0 && curr.next !== null) {
+        curr = curr.next;
+        countDown--;
       }
-    }
+      let temp = new _Node(list.head.value);
 
-    LanguageService.insertGuess()
-  })
+      if (curr.next === null) {
+        temp.next = curr.next;
+        curr.next = temp;
+        list.head = list.head.next;
+        curr.value.next = temp.value.id;
+        temp.value.next = null;
+      } else {
+        temp.next = curr.next;
+        curr.next = temp;
+        list.head = list.head.next;
+        curr.value.next = temp.value.id;
+        temp.value.next = temp.next.value.id;
+      }
+      req.language.total_score++;
+
+      await LanguageService.updateWordsTable(
+        req.app.get("db"),
+        returnAllData(list),
+        req.language.id,
+        req.language.total_score
+      );
+      res.json({
+        nextWord: list.head.value.original,
+        totalScore: req.language.total_score,
+        wordCorrectCount: list.head.value.correct_count,
+        wordIncorrectCount: list.head.value.incorrect_count,
+        answer: temp.value.translation,
+        isCorrect: true,
+      });
+    } else {
+      list.head.value.memory_value = 1;
+      list.head.value.incorrect_count++;
+
+      let curr = list.head;
+      let countDown = 1;
+      while (countDown > 0) {
+        curr = curr.next;
+        countDown--;
+      }
+
+      let temp = new _Node(list.head.value);
+      temp.next = curr.next;
+      curr.next = temp;
+      list.head = list.head.next;
+      curr.value.next = temp.value.id;
+      temp.value.next = temp.next.value.id;
+
+      await LanguageService.updateWordsTable(
+        req.app.get("db"),
+        returnAllData(list),
+        req.language.id,
+        req.language.total_score
+      );
+      res.json({
+        nextWord: list.head.value.original,
+        totalScore: req.language.total_score,
+        wordCorrectCount: list.head.value.correct_count,
+        wordIncorrectCount: list.head.value.incorrect_count,
+        answer: temp.value.translation,
+        isCorrect: false,
+      });
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = languageRouter
