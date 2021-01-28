@@ -44,7 +44,9 @@ languageRouter
     }
   })
 
-languageRouter.get("/head", async (req, res, next) => {
+languageRouter
+.get('/head', async (req, res, next) => {
+  console.log('this is firing')
   try {
     const [nextWord] = await LanguageService.getNextWord(
       req.app.get("db"),
