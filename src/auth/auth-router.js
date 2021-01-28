@@ -43,6 +43,7 @@ authRouter
         user_id: dbUser.id,
         name: dbUser.name,
       }
+      console.log('getting here')
       res.send({
         authToken: AuthService.createJwt(sub, payload),
       })
